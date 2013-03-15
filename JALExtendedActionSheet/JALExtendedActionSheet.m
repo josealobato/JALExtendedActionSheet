@@ -12,8 +12,9 @@
 
 
 @interface JALExtendedActionSheet ()
-@property (nonatomic,strong) UIView *hostV;
-//@property (nonatomic, weak) UIView* sheetV;
+@property (nonatomic, strong) UIView *hostV;
+@property (nonatomic, weak) UIView* sheetV;
+@property (nonatomic, strong) NSLayoutConstraint *sheetVerticalConstraint;
 @end
 
 @implementation JALExtendedActionSheet
@@ -29,10 +30,7 @@ static const CGFloat kBackgroundAlpha = 0.7;
 	[self.view setTranslatesAutoresizingMaskIntoConstraints:NO];
 	self.view.backgroundColor = [UIColor blackColor];
 	self.view.alpha = 0.0;
-}
 
-- (void)viewDidAppear:(BOOL)animated
-{
 	UIView *sheet = [[UIView alloc] init];
 	[sheet setTranslatesAutoresizingMaskIntoConstraints:NO];
 	sheet.backgroundColor = [UIColor blackColor];
@@ -51,18 +49,21 @@ static const CGFloat kBackgroundAlpha = 0.7;
 															views:views];
 	[self.view addConstraints:constraints];
 
-	NSLayoutConstraint *vPositionConstraint = [NSLayoutConstraint constraintWithItem:sheet attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeBottom multiplier:1.0 constant:0];
+	self.sheetVerticalConstraint = [NSLayoutConstraint constraintWithItem:sheet attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeBottom multiplier:1.0 constant:0];
 
-	[self.view addConstraint:vPositionConstraint];
-	
+	[self.view addConstraint:self.sheetVerticalConstraint];
 	[self.view layoutIfNeeded];
 
+	self.sheetV = sheet;
+}
+
+- (void)viewDidAppear:(BOOL)animated
+{
 	[UIView animateWithDuration:kApearanceAnimationDuration animations:^{
-		[vPositionConstraint setConstant:-kActionSheetHeight];
+		[self.sheetVerticalConstraint setConstant:-kActionSheetHeight];
 		[self.view layoutIfNeeded];
 		self.view.alpha = kBackgroundAlpha;
 	} completion:NULL];
-
 }
 
 - (void)didReceiveMemoryWarning
@@ -90,7 +91,6 @@ static const CGFloat kBackgroundAlpha = 0.7;
 														  metrics:nil
 															views:views];
 	[hostview.window addConstraints:constraints];
-
 }
 
 @end
