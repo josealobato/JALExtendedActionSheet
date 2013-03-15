@@ -9,6 +9,7 @@
 #import "MasterViewController.h"
 
 #import "DetailViewController.h"
+#import "JALExtendedActionSheet.h"
 
 @interface MasterViewController () {
     NSMutableArray *_objects;
@@ -123,11 +124,14 @@
 {
     NSDate *object = _objects[indexPath.row];
     if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
-	    if (!self.detailViewController) {
+/*	    if (!self.detailViewController) {
 	        self.detailViewController = [[DetailViewController alloc] initWithNibName:@"DetailViewController_iPhone" bundle:nil];
 	    }
 	    self.detailViewController.detailItem = object;
         [self.navigationController pushViewController:self.detailViewController animated:YES];
+ */
+		JALExtendedActionSheet *jeac = [[JALExtendedActionSheet alloc] init];
+		[jeac showInView:self.view];
     } else {
         self.detailViewController.detailItem = object;
     }
