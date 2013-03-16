@@ -28,7 +28,7 @@ static const CGFloat kApearanceAnimationDuration = 0.4;
 static const CGFloat kBackgroundAlpha = 0.7;
 
 static const CGFloat kJEACGeneralMargin = 5.0;
-static const CGFloat kJEACInterButtonsSpace = 5.0;
+static const CGFloat kJEACInterButtonsSpace = 8.0;
 static const CGFloat kJEACButtonsHeight = 27.0;
 
 static const CGFloat kJEACWidth = 320.0;
@@ -177,14 +177,14 @@ static const CGFloat kJEACHeight = 250.0;
 - (void)buildButtonViews
 {
 	NSInteger numberOfPages = ceil(((kJEACButtonsHeight + kJEACInterButtonsSpace)*[self.actions count])/self.scrollView.bounds.size.height);
-	//	NSInteger buttonsPerPage = floor(self.scrollView.bounds.size.height/(kJEACButtonsHeight + kJEACInterButtonsSpace));
+	NSInteger buttonsPerPage = floor(self.scrollView.bounds.size.height/(kJEACButtonsHeight + kJEACInterButtonsSpace));
 
 	self.scrollView.contentSize = CGSizeMake(self.scrollView.bounds.size.width * numberOfPages,
 											 self.scrollView.bounds.size.height);
 
 	UIView *currentSubView = nil;
-	//	UIButton *currentButton = nil;
-	//	NSInteger titleIDX = 0;
+	UIButton *currentButton = nil;
+	NSInteger titleIDX = 0;
 	for (NSInteger idx=0; idx<numberOfPages; idx++) {
 
 		currentSubView = [[UIView alloc] init];
@@ -199,6 +199,39 @@ static const CGFloat kJEACHeight = 250.0;
 															  metrics:nil
 																views:views];
 		[self.scrollView addConstraints:constraints];
+
+		NSMutableArray *buttonsInACurrentPage = [NSMutableArray array];
+		for (NSInteger jdx = 0; jdx<buttonsPerPage; jdx++) {
+			if (titleIDX>=[self.actions count])
+				break;
+			currentButton = [self newRegularButtonWithTitle:[self.actions objectAtIndex:titleIDX]];
+			titleIDX++;
+			[buttonsInACurrentPage addObject:currentButton];
+			[currentSubView addSubview:currentButton];
+
+			views = NSDictionaryOfVariableBindings(currentButton);
+			constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"H:|-20-[currentButton]-20-|"
+																  options:0
+																  metrics:nil
+																	views:views];
+			[currentSubView addConstraints:constraints];
+		}
+
+		NSMutableString *constraintVisualFormat = [NSMutableString stringWithFormat:@"V:|-(>=%f)-",kJEACInterButtonsSpace];
+		NSMutableDictionary *viewsDictionary = [NSMutableDictionary dictionary];
+		for (UIButton *button in buttonsInACurrentPage) {
+			NSString *buttonID = [NSString stringWithFormat:@"button%d",[buttonsInACurrentPage indexOfObject:button]];
+			[constraintVisualFormat appendFormat:@"[%@(%f)]-(>=%f)-",buttonID,kJEACButtonsHeight,kJEACInterButtonsSpace];
+			[viewsDictionary setObject:button forKey:buttonID];
+		}
+		[constraintVisualFormat appendFormat:@"|"];
+		constraints = [NSLayoutConstraint constraintsWithVisualFormat:constraintVisualFormat
+																	   options:0
+																	   metrics:nil
+																		 views:viewsDictionary];
+		[currentSubView addConstraints:constraints];
+
+		[currentSubView layoutIfNeeded];
 	}
 
 	NSMutableString *constraintVisualFormat = [NSMutableString stringWithFormat:@"H:|"];
@@ -210,7 +243,6 @@ static const CGFloat kJEACHeight = 250.0;
 		[viewsDictionary setObject:subView forKey:viewID];
 	}
 	[constraintVisualFormat appendFormat:@"|"];
-
 	NSArray *constraints = [NSLayoutConstraint constraintsWithVisualFormat:constraintVisualFormat
 																   options:0
 																   metrics:nil
