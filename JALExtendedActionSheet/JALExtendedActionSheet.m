@@ -10,20 +10,29 @@
 #import <QuartzCore/QuartzCore.h>
 
 
-
 @interface JALExtendedActionSheet ()
 @property (nonatomic, strong) UIView *hostV;
 @property (nonatomic, weak) UIView* sheetV;
 @property (nonatomic, strong) NSLayoutConstraint *sheetVerticalConstraint;
+
+@property (nonatomic, strong) UILabel *label;
+@property (nonatomic, strong) UIScrollView *scrollView;
+@property (nonatomic, strong) NSMutableArray *scrollViewPages;
+@property (nonatomic, strong) UIPageControl *pageControl;
+@property (nonatomic, strong) NSMutableArray *buttons;
 @end
 
 @implementation JALExtendedActionSheet
 
 static const CGFloat kApearanceAnimationDuration = 0.4;
-static const CGFloat kActionSheetHeight = 250.0;
 static const CGFloat kBackgroundAlpha = 0.7;
-static const CGFloat kButtonsHeight = 27.0;
 
+static const CGFloat kJEACGeneralMargin = 5.0;
+static const CGFloat kJEACInterButtonsSpace = 5.0;
+static const CGFloat kJEACButtonsHeight = 27.0;
+
+static const CGFloat kJEACWidth = 320.0;
+static const CGFloat kJEACHeight = 250.0;
 
 - (void)viewDidLoad
 {
@@ -31,6 +40,8 @@ static const CGFloat kButtonsHeight = 27.0;
 	[self.view setTranslatesAutoresizingMaskIntoConstraints:NO];
 	self.view.backgroundColor = [UIColor blackColor];
 	self.view.alpha = 0.0;
+
+	self.scrollViewPages = [NSMutableArray array];
 
 	UIView *sheet = [[UIView alloc] init];
 	[sheet setTranslatesAutoresizingMaskIntoConstraints:NO];
@@ -44,7 +55,7 @@ static const CGFloat kButtonsHeight = 27.0;
 															views:views];
 	[self.view addConstraints:constraints];
 
-	constraints = [NSLayoutConstraint constraintsWithVisualFormat:[NSString stringWithFormat:@"V:[sheet(%f)]", kActionSheetHeight]
+	constraints = [NSLayoutConstraint constraintsWithVisualFormat:[NSString stringWithFormat:@"V:[sheet(%f)]", kJEACHeight]
 														  options:0
 														  metrics:nil
 															views:views];
@@ -57,7 +68,7 @@ static const CGFloat kButtonsHeight = 27.0;
 
 	// Message Label
 
-	UILabel *msgLabel = [self messageLabel];
+	UILabel *msgLabel = [self newMessageLabel];
 	[sheet addSubview:msgLabel];
 	views = NSDictionaryOfVariableBindings(msgLabel);
 	constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"|-20-[msgLabel]-20-|"
@@ -65,41 +76,37 @@ static const CGFloat kButtonsHeight = 27.0;
 														  metrics:nil
 															views:views];
 	[sheet addConstraints:constraints];
-
+	self.label = msgLabel;
 
 	// Buttons container (Scroll)
 
-	UIScrollView *buttonsContainer = [[UIScrollView alloc] init];
-	buttonsContainer.layer.borderColor = [UIColor whiteColor].CGColor;
-	buttonsContainer.layer.borderWidth = 1.0;
+	UIScrollView *buttonsContainer = [self newButtonsContainer];
 	[sheet addSubview:buttonsContainer];
-	[buttonsContainer setTranslatesAutoresizingMaskIntoConstraints:NO];
 	views = NSDictionaryOfVariableBindings(buttonsContainer);
 	constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"|[buttonsContainer]|"
 														  options:0
 														  metrics:nil
 															views:views];
 	[sheet addConstraints:constraints];
+	self.scrollView = buttonsContainer;
 
 
 	// Pager under the Scroll
 
-	UIPageControl *pageControl = [[UIPageControl alloc] init];
-	pageControl.layer.borderColor = [UIColor whiteColor].CGColor;
-	pageControl.layer.borderWidth = 1.0;
-	[sheet addSubview:pageControl];
-	[pageControl setTranslatesAutoresizingMaskIntoConstraints:NO];
-	views = NSDictionaryOfVariableBindings(pageControl);
-	constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"|[pageControl]|"
+	UIPageControl *pager = [self newPageControl];
+	[sheet addSubview:pager];
+	views = NSDictionaryOfVariableBindings(pager);
+	constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"|[pager]|"
 														  options:0
 														  metrics:nil
 															views:views];
 	[sheet addConstraints:constraints];
+	self.pageControl = pager;
 
 
 	// Cancel Button
 
-	UIButton *cancelButton = [self cancelButton];
+	UIButton *cancelButton = [self newCancelButton];
 	[sheet addSubview:cancelButton];
 	views = NSDictionaryOfVariableBindings(cancelButton);
 	constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"|-20-[cancelButton]-20-|"
@@ -111,8 +118,8 @@ static const CGFloat kButtonsHeight = 27.0;
 
 	// Vertical arrangement
 
-	views = NSDictionaryOfVariableBindings(msgLabel, buttonsContainer, pageControl, cancelButton);
-	NSString *constraintStr = [NSString stringWithFormat:@"V:|-5-[msgLabel(16)][buttonsContainer][pageControl(10)]-7-[cancelButton(%f)]-7-|", kButtonsHeight];
+	views = NSDictionaryOfVariableBindings(msgLabel, buttonsContainer, pager, cancelButton);
+	NSString *constraintStr = [NSString stringWithFormat:@"V:|-5-[msgLabel(16)][buttonsContainer][pager(10)]-7-[cancelButton(%f)]-7-|", kJEACButtonsHeight];
 	constraints = [NSLayoutConstraint constraintsWithVisualFormat:constraintStr
 														  options:0
 														  metrics:nil
@@ -120,16 +127,18 @@ static const CGFloat kButtonsHeight = 27.0;
 	[sheet addConstraints:constraints];
 
 
+	// NOTE: note that before build the buttons view we need the size of the scroll so layout first.
+	[sheet layoutIfNeeded];
+	[self buildButtonViews];
 	[sheet layoutIfNeeded];
 	self.sheetV = sheet;
-
 }
 
 
 - (void)viewDidAppear:(BOOL)animated
 {
 	[UIView animateWithDuration:kApearanceAnimationDuration animations:^{
-		[self.sheetVerticalConstraint setConstant:-kActionSheetHeight];
+		[self.sheetVerticalConstraint setConstant:-kJEACHeight];
 		[self.view layoutIfNeeded];
 		self.view.alpha = kBackgroundAlpha;
 	} completion:NULL];
@@ -163,10 +172,57 @@ static const CGFloat kButtonsHeight = 27.0;
 	[hostview.window addConstraints:constraints];
 }
 
+#pragma mark - Button Views
+
+- (void)buildButtonViews
+{
+	NSInteger numberOfPages = ceil(((kJEACButtonsHeight + kJEACInterButtonsSpace)*[self.actions count])/self.scrollView.bounds.size.height);
+	//	NSInteger buttonsPerPage = floor(self.scrollView.bounds.size.height/(kJEACButtonsHeight + kJEACInterButtonsSpace));
+
+	self.scrollView.contentSize = CGSizeMake(self.scrollView.bounds.size.width * numberOfPages,
+											 self.scrollView.bounds.size.height);
+
+	UIView *currentSubView = nil;
+	//	UIButton *currentButton = nil;
+	//	NSInteger titleIDX = 0;
+	for (NSInteger idx=0; idx<numberOfPages; idx++) {
+
+		currentSubView = [[UIView alloc] init];
+		[currentSubView setTranslatesAutoresizingMaskIntoConstraints:NO];
+		[self.scrollViewPages addObject:currentSubView];
+		[self.scrollView addSubview:currentSubView];
+
+		NSDictionary *views = NSDictionaryOfVariableBindings(currentSubView);
+		NSArray *constraints;
+		constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[currentSubView]|"
+															  options:NSLayoutFormatAlignAllTop
+															  metrics:nil
+																views:views];
+		[self.scrollView addConstraints:constraints];
+	}
+
+	NSMutableString *constraintVisualFormat = [NSMutableString stringWithFormat:@"H:|"];
+	NSMutableDictionary *viewsDictionary = [NSMutableDictionary dictionary];
+	NSString *viewID;
+	for (UIView *subView in self.scrollViewPages) {
+		viewID = [NSString stringWithFormat:@"ScrollerPage%d",[self.scrollViewPages indexOfObject:subView]];
+		[constraintVisualFormat appendFormat:@"[%@(%f)]",viewID,self.scrollView.bounds.size.width];
+		[viewsDictionary setObject:subView forKey:viewID];
+	}
+	[constraintVisualFormat appendFormat:@"|"];
+
+	NSArray *constraints = [NSLayoutConstraint constraintsWithVisualFormat:constraintVisualFormat
+																   options:0
+																   metrics:nil
+																	 views:viewsDictionary];
+	[self.scrollView addConstraints:constraints];
+
+	[self.scrollView layoutIfNeeded];
+}
 
 #pragma mark - basic Views customization
 
-- (UIButton *)cancelButton
+- (UIButton *)newCancelButton
 {
 	UIButton *newCancelButton = [UIButton buttonWithType:UIButtonTypeCustom];
 	[newCancelButton setTranslatesAutoresizingMaskIntoConstraints:NO];
@@ -178,14 +234,54 @@ static const CGFloat kButtonsHeight = 27.0;
 	return newCancelButton;
 }
 
-- (UILabel *)messageLabel
+- (UIButton *)newRegularButtonWithTitle:(NSString *)title;
+{
+	UIButton *newRegularButton = [UIButton buttonWithType:UIButtonTypeCustom];
+	[newRegularButton setTranslatesAutoresizingMaskIntoConstraints:NO];
+	newRegularButton.layer.backgroundColor = [UIColor whiteColor].CGColor;
+	newRegularButton.layer.cornerRadius = 5.0;
+	[newRegularButton setTitle:title forState:UIControlStateNormal];
+
+	return newRegularButton;
+}
+
+- (UILabel *)newMessageLabel
 {
 	UILabel *newLabel = [[UILabel alloc] init];
 	[newLabel setTranslatesAutoresizingMaskIntoConstraints:NO];
 	newLabel.textColor = [UIColor whiteColor];
-	//	newLabel.textAlignment = UITextAlignmentCenter;
+	// TODO: Set alignement fo the text to center.
 	return newLabel;
 }
 
+- (UIScrollView *)newButtonsContainer
+{
+	UIScrollView *newButtonsContainer = [[UIScrollView alloc] init];
+	[newButtonsContainer setTranslatesAutoresizingMaskIntoConstraints:NO];
+	newButtonsContainer.pagingEnabled = YES;
+	newButtonsContainer.showsHorizontalScrollIndicator = NO;
+	newButtonsContainer.showsVerticalScrollIndicator = NO;
+	newButtonsContainer.scrollsToTop = NO;
+	newButtonsContainer.delegate = self;
+
+	// TODO: Remove. Only Debug
+	newButtonsContainer.layer.borderColor = [UIColor whiteColor].CGColor;
+	newButtonsContainer.layer.borderWidth = 1.0;
+
+	return newButtonsContainer;
+}
+
+- (UIPageControl *)newPageControl
+{
+	UIPageControl *newPageControl = [[UIPageControl alloc] init];
+	[newPageControl setTranslatesAutoresizingMaskIntoConstraints:NO];
+	newPageControl.currentPage = 0;
+
+	// TODO: Remove. Only Debug
+	newPageControl.layer.borderColor = [UIColor whiteColor].CGColor;
+	newPageControl.layer.borderWidth = 1.0;
+
+	return newPageControl;
+}
 
 @end

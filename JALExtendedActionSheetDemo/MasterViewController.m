@@ -131,6 +131,7 @@
         [self.navigationController pushViewController:self.detailViewController animated:YES];
  */
 		JALExtendedActionSheet *jeac = [[JALExtendedActionSheet alloc] init];
+		jeac.actions = @[@"Actions1",@"Actions2",@"Actions3",@"Actions4",@"Actions5",@"Actions6",@"Actions7"];
 		[jeac showInView:self.view];
     } else {
         self.detailViewController.detailItem = object;
