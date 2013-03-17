@@ -181,6 +181,9 @@ static const CGFloat kJEACHeight = 320.0;
 	NSInteger numberOfPages = ceil(((kJEACButtonsHeight + kJEACInterButtonsSpace)*[self.actions count])/self.scrollView.bounds.size.height);
 	NSInteger buttonsPerPage = floor(self.scrollView.bounds.size.height/(kJEACButtonsHeight + kJEACInterButtonsSpace));
 
+	self.pageControl.numberOfPages = numberOfPages;
+	self.pageControl.currentPage = 0;
+
 	self.scrollView.contentSize = CGSizeMake(self.scrollView.bounds.size.width * numberOfPages,
 											 self.scrollView.bounds.size.height);
 
@@ -310,7 +313,9 @@ static const CGFloat kJEACHeight = 320.0;
 {
 	UIPageControl *newPageControl = [[UIPageControl alloc] init];
 	[newPageControl setTranslatesAutoresizingMaskIntoConstraints:NO];
-	newPageControl.currentPage = 0;
+	[newPageControl addTarget:self
+					   action:@selector(pageControlDidChangeValue:)
+			 forControlEvents:UIControlEventValueChanged];
 
 	// TODO: Remove. Only Debug
 	newPageControl.layer.borderColor = [UIColor whiteColor].CGColor;
@@ -319,6 +324,15 @@ static const CGFloat kJEACHeight = 320.0;
 	return newPageControl;
 }
 
+#pragma mark - PageControl delegate
+
+-(void)pageControlDidChangeValue:(UIPageControl *)pageControl
+{
+	if([pageControl currentPage]>=[self.scrollViewPages count])
+		return;
+	UIView *viewToShow = [self.scrollViewPages objectAtIndex:[pageControl currentPage]];
+	[self.scrollView scrollRectToVisible:viewToShow.frame animated:YES];
+}
 #pragma mark - ScrollViewDelegate
 
 //- (void)scrollViewDidScroll:(UIScrollView *)scrollView
@@ -346,10 +360,11 @@ static const CGFloat kJEACHeight = 320.0;
 //{
 //
 //}
-//- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView
-//{
-//
-//}
+- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView
+{
+    NSUInteger page = floor((self.scrollView.contentOffset.x - kJEACWidth / 2) / kJEACWidth) + 1;
+    self.pageControl.currentPage = page;
+}
 //- (void)scrollViewDidEndScrollingAnimation:(UIScrollView *)scrollView
 //{
 //
