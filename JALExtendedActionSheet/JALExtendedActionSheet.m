@@ -134,16 +134,20 @@ static const CGFloat kJEACHeight = 320.0;
 	[self buildButtonViews];
 	[sheet layoutIfNeeded];
 	self.sheetV = sheet;
-}
 
-
-- (void)viewDidAppear:(BOOL)animated
-{
+	// TODO: Shall this go in the viewDidAppear?.
 	[UIView animateWithDuration:kApearanceAnimationDuration animations:^{
 		[self.sheetVerticalConstraint setConstant:-kJEACHeight];
 		[self.view layoutIfNeeded];
 		self.view.alpha = kBackgroundAlpha;
 	} completion:NULL];
+
+}
+
+
+- (void)viewDidAppear:(BOOL)animated
+{
+	[super viewDidAppear:animated];
 }
 
 
@@ -155,8 +159,12 @@ static const CGFloat kJEACHeight = 320.0;
 
 - (void)showInView:(UIView*)hostview
 {
-	self.hostV = hostview;
-	[hostview.window addSubview:self.view];
+
+	UIViewController *rootController = hostview.window.rootViewController;
+
+	[rootController addChildViewController:self];
+	[rootController.view addSubview:self.view];
+	[self didMoveToParentViewController:rootController];
 
 	UIView *selfview = self.view;
 	NSDictionary *views = NSDictionaryOfVariableBindings(selfview);
@@ -165,13 +173,13 @@ static const CGFloat kJEACHeight = 320.0;
 														  options:0
 														  metrics:nil
 															views:views];
-	[hostview.window addConstraints:constraints];
+	[rootController.view addConstraints:constraints];
 
 	constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[selfview]|"
 														  options:0
 														  metrics:nil
 															views:views];
-	[hostview.window addConstraints:constraints];
+	[rootController.view addConstraints:constraints];
 }
 
 #pragma mark - Button Views
@@ -200,7 +208,7 @@ static const CGFloat kJEACHeight = 320.0;
 		NSDictionary *views = NSDictionaryOfVariableBindings(currentSubView);
 		NSArray *constraints;
 		constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[currentSubView]|"
-															  options:NSLayoutFormatAlignAllTop
+															  options:0
 															  metrics:nil
 																views:views];
 		[self.scrollView addConstraints:constraints];
