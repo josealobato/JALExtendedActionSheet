@@ -28,11 +28,13 @@ static const CGFloat kApearanceAnimationDuration = 0.4;
 static const CGFloat kBackgroundAlpha = 0.7;
 
 static const CGFloat kJEACGeneralMargin = 5.0;
-static const CGFloat kJEACInterButtonsSpace = 8.0;
-static const CGFloat kJEACButtonsHeight = 27.0;
+static const CGFloat kJEACInterButtonsSpace = 14.0;
+static const CGFloat kJEACButtonsHeight = 38.0;
 
+static const CGFloat kJEACMessageHeight = 20.0;
+static const CGFloat kJEACPagerHeight = 20.0;
 static const CGFloat kJEACWidth = 320.0;
-static const CGFloat kJEACHeight = 250.0;
+static const CGFloat kJEACHeight = 320.0;
 
 - (void)viewDidLoad
 {
@@ -119,7 +121,7 @@ static const CGFloat kJEACHeight = 250.0;
 	// Vertical arrangement
 
 	views = NSDictionaryOfVariableBindings(msgLabel, buttonsContainer, pager, cancelButton);
-	NSString *constraintStr = [NSString stringWithFormat:@"V:|-5-[msgLabel(16)][buttonsContainer][pager(10)]-7-[cancelButton(%f)]-7-|", kJEACButtonsHeight];
+	NSString *constraintStr = [NSString stringWithFormat:@"V:|-5-[msgLabel(%f)][buttonsContainer][pager(%f)]-7-[cancelButton(%f)]-7-|",kJEACMessageHeight, kJEACPagerHeight, kJEACButtonsHeight];
 	constraints = [NSLayoutConstraint constraintsWithVisualFormat:constraintStr
 														  options:0
 														  metrics:nil
@@ -294,6 +296,7 @@ static const CGFloat kJEACHeight = 250.0;
 	newButtonsContainer.showsHorizontalScrollIndicator = NO;
 	newButtonsContainer.showsVerticalScrollIndicator = NO;
 	newButtonsContainer.scrollsToTop = NO;
+	newButtonsContainer.bounces = NO;
 	newButtonsContainer.delegate = self;
 
 	// TODO: Remove. Only Debug
@@ -315,5 +318,61 @@ static const CGFloat kJEACHeight = 250.0;
 
 	return newPageControl;
 }
+
+#pragma mark - ScrollViewDelegate
+
+//- (void)scrollViewDidScroll:(UIScrollView *)scrollView
+//{
+//
+//}
+//- (void)scrollViewDidZoom:(UIScrollView *)scrollView
+//{
+//
+//}
+//- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView
+//{
+//
+//}
+//- (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoint)velocity targetContentOffset:(inout CGPoint *)targetContentOffset
+//{
+//
+//}
+//- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate
+//{
+//
+//}
+//
+//- (void)scrollViewWillBeginDecelerating:(UIScrollView *)scrollView
+//{
+//
+//}
+//- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView
+//{
+//
+//}
+//- (void)scrollViewDidEndScrollingAnimation:(UIScrollView *)scrollView
+//{
+//
+//}
+////- (UIView *)viewForZoomingInScrollView:(UIScrollView *)scrollView
+////{
+////
+////}
+//- (void)scrollViewWillBeginZooming:(UIScrollView *)scrollView withView:(UIView *)view
+//{
+//
+//}
+//- (void)scrollViewDidEndZooming:(UIScrollView *)scrollView withView:(UIView *)view atScale:(float)scale
+//{
+//
+//}
+//- (BOOL)scrollViewShouldScrollToTop:(UIScrollView *)scrollView
+//{
+//	return YES;
+//}
+//- (void)scrollViewDidScrollToTop:(UIScrollView *)scrollView
+//{
+//
+//}
 
 @end

@@ -14,6 +14,7 @@
 @interface MasterViewController () {
     NSMutableArray *_objects;
 }
+@property (nonatomic,strong) JALExtendedActionSheet  *jeas;
 @end
 
 @implementation MasterViewController
@@ -130,9 +131,9 @@
 	    self.detailViewController.detailItem = object;
         [self.navigationController pushViewController:self.detailViewController animated:YES];
  */
-		JALExtendedActionSheet *jeac = [[JALExtendedActionSheet alloc] init];
-		jeac.actions = @[@"Actions1",@"Actions2",@"Actions3",@"Actions4",@"Actions5",@"Actions6",@"Actions7"];
-		[jeac showInView:self.view];
+		self.jeas = [[JALExtendedActionSheet alloc] init];
+		self.jeas.actions = @[@"Actions1",@"Actions2",@"Actions3",@"Actions4",@"Actions5",@"Actions6",@"Actions7"];
+		[self.jeas showInView:self.view];
     } else {
         self.detailViewController.detailItem = object;
     }
