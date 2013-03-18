@@ -26,6 +26,7 @@ The use is simple (see the example code included):
 2. Instantiate the view controller giving a list of actions (strings)
 
 Here an example of code:
+
 	@interface MasterViewController () <JALExtendedActionSheetVCDelegate>
 		@property (nonatomic,strong) JALExtendedActionSheetVC  *jeas;
 		@property (nonatomic,strong) NSArray *actions;
