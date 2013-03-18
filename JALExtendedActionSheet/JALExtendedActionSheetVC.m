@@ -74,6 +74,13 @@ static const CGFloat kBackgroundAlpha = 0.7;
     // Dispose of any resources that can be recreated.
 }
 
+- (void)setMessage:(NSString *)message
+{
+	if (self.messageLabel) {
+		self.messageLabel.text = message;
+	}
+}
+
 #pragma mark - Dimensions
 
 static const CGFloat kJEACSheetHeightPortrait = 320.0;
@@ -174,8 +181,8 @@ static const CGFloat kJEACButtonHeightLandscape = 30.0;
 	[self.sheetVerticalConstraint setConstant:[self sheetHeight]-10];
 
 	// TODO: Remove only debug.
-	self.actionSheet.layer.borderWidth = 1.0;
-	self.actionSheet.layer.borderColor = [UIColor redColor].CGColor;
+//	self.actionSheet.layer.borderWidth = 1.0;
+//	self.actionSheet.layer.borderColor = [UIColor redColor].CGColor;
 	return sheet;
 }
 
@@ -253,6 +260,9 @@ static const CGFloat kJEACButtonHeightLandscape = 30.0;
 	UILabel *newLabel = [[UILabel alloc] init];
 	[newLabel setTranslatesAutoresizingMaskIntoConstraints:NO];
 	self.messageLabel = newLabel;
+	newLabel.textColor = [UIColor whiteColor];
+	newLabel.backgroundColor = [UIColor clearColor];
+	newLabel.textAlignment = NSTextAlignmentCenter;
 	[self.actionSheet addSubview:newLabel];
 	NSArray *constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"|-20-[msg]-20-|"
 														  options:0
@@ -261,8 +271,8 @@ static const CGFloat kJEACButtonHeightLandscape = 30.0;
 	[self.actionSheet addConstraints:constraints];
 
 	// TODO: Remove only debug.
-	newLabel.textColor = [UIColor whiteColor];
-	
+//	newLabel.textColor = [UIColor whiteColor];
+
 	return newLabel;
 }
 
@@ -283,8 +293,8 @@ static const CGFloat kJEACButtonHeightLandscape = 30.0;
 			 forControlEvents:UIControlEventValueChanged];
 
 	// TODO: Remove. Only Debug
-	newPageControl.layer.borderColor = [UIColor whiteColor].CGColor;
-	newPageControl.layer.borderWidth = 1.0;
+//	newPageControl.layer.borderColor = [UIColor whiteColor].CGColor;
+//	newPageControl.layer.borderWidth = 1.0;
 
 	return newPageControl;
 }
@@ -309,8 +319,8 @@ static const CGFloat kJEACButtonHeightLandscape = 30.0;
 	[self.actionSheet addConstraints:constraints];
 
 	// TODO: Remove. Only Debug
-	newScrollView.layer.borderColor = [UIColor whiteColor].CGColor;
-	newScrollView.layer.borderWidth = 1.0;
+//	newScrollView.layer.borderColor = [UIColor whiteColor].CGColor;
+//	newScrollView.layer.borderWidth = 1.0;
 
 	return newScrollView;	
 }
@@ -322,6 +332,10 @@ static const CGFloat kJEACButtonHeightLandscape = 30.0;
 	newRegularButton.layer.backgroundColor = [UIColor whiteColor].CGColor;
 	newRegularButton.layer.cornerRadius = 5.0;
 	[newRegularButton setTitle:title forState:UIControlStateNormal];
+
+	[newRegularButton addTarget:self
+						 action:@selector(onRegularButton:)
+			   forControlEvents:UIControlEventTouchUpInside];
 
 	return newRegularButton;
 }
@@ -371,6 +385,7 @@ static const CGFloat kJEACInterButtonsSpace = 10.0;
 			if (titleIDX>=[self.actions count])
 				break;
 			currentButton = [self newRegularButtonWithTitle:[self.actions objectAtIndex:titleIDX]];
+			currentButton.tag = titleIDX;
 			titleIDX++;
 			[buttonsInACurrentPage addObject:currentButton];
 			[currentSubView addSubview:currentButton];
@@ -423,6 +438,10 @@ static const CGFloat kJEACInterButtonsSpace = 10.0;
 
 - (void)onCancelButton:(UIButton*)button
 {
+	if (self.delegate && [self.delegate respondsToSelector:@selector(actionSheetDidCancel:)]) {
+		[self.delegate actionSheetDidCancel:self];
+	}
+	
 	// TODO: Investigate why this animation does not work.
 	[self.view layoutIfNeeded];
 	[UIView animateWithDuration:kApearanceAnimationDuration animations:^{
@@ -436,6 +455,13 @@ static const CGFloat kJEACInterButtonsSpace = 10.0;
 			[self removeFromParentViewController];
 		}
 	}];
+}
+
+- (void)onRegularButton:(UIButton*)button
+{
+	if (self.delegate && [self.delegate respondsToSelector:@selector(actionSheet:didSelectAction:)]) {
+		[self.delegate actionSheet:self didSelectAction:button.tag];
+	}
 }
 
 #pragma mark - ScrollViewDelegate

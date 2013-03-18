@@ -8,9 +8,16 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol JALExtendedActionSheetVCDelegate;
+
 @interface JALExtendedActionSheetVC : UIViewController <UIScrollViewDelegate>
-
 @property (nonatomic, strong) NSArray *actions;
+@property (nonatomic, assign) id<JALExtendedActionSheetVCDelegate> delegate;
 - (void)showInView:(UIView*)hostview;
+- (void)setMessage:(NSString *)message;
+@end
 
+@protocol JALExtendedActionSheetVCDelegate <NSObject>
+- (void)actionSheet:(JALExtendedActionSheetVC*)actionSheet didSelectAction:(NSInteger)index;
+- (void)actionSheetDidCancel:(JALExtendedActionSheetVC*)actionSheet;
 @end

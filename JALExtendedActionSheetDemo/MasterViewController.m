@@ -11,10 +11,11 @@
 #import "DetailViewController.h"
 #import "JALExtendedActionSheetVC.h"
 
-@interface MasterViewController () {
+@interface MasterViewController () <JALExtendedActionSheetVCDelegate> {
     NSMutableArray *_objects;
 }
 @property (nonatomic,strong) JALExtendedActionSheetVC  *jeas;
+@property (nonatomic,strong) NSArray *actions;
 @end
 
 @implementation MasterViewController
@@ -40,6 +41,8 @@
 
 	UIBarButtonItem *addButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAdd target:self action:@selector(insertNewObject:)];
 	self.navigationItem.rightBarButtonItem = addButton;
+
+	self.actions = @[@"Actions1",@"Actions2",@"Actions3",@"Actions4",@"Actions5",@"Actions6",@"Actions7"];
 }
 
 - (void)didReceiveMemoryWarning
@@ -132,11 +135,23 @@
         [self.navigationController pushViewController:self.detailViewController animated:YES];
  */
 		self.jeas = [[JALExtendedActionSheetVC alloc] init];
-		self.jeas.actions = @[@"Actions1",@"Actions2",@"Actions3",@"Actions4",@"Actions5",@"Actions6",@"Actions7"];
+		self.jeas.actions = self.actions;
 		[self.jeas showInView:self.view];
+		self.jeas.delegate = self;
     } else {
         self.detailViewController.detailItem = object;
     }
 }
+
+- (void)actionSheet:(JALExtendedActionSheetVC*)actionSheet didSelectAction:(NSInteger)index
+{
+	[self.jeas setMessage:[self.actions objectAtIndex:index]];
+}
+
+- (void)actionSheetDidCancel:(JALExtendedActionSheetVC*)actionSheet
+{
+	
+}
+
 
 @end
