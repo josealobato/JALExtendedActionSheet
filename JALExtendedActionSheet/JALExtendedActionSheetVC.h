@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface JALExtendedActionSheetVC : UIViewController
+@interface JALExtendedActionSheetVC : UIViewController <UIScrollViewDelegate>
 
 @property (nonatomic, strong) NSArray *actions;
 - (void)showInView:(UIView*)hostview;

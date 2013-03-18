@@ -16,6 +16,8 @@
 @property (nonatomic, strong) UIScrollView *scrollView;
 @property (nonatomic, strong) UIButton *cancelButton;
 @property (nonatomic, strong) NSLayoutConstraint *cancleButtonHeightConstraint;
+
+@property (nonatomic, strong) NSMutableArray *scrollViewPages;
 @end
 
 
@@ -30,6 +32,8 @@ static const CGFloat kBackgroundAlpha = 0.7;
 	self.view.backgroundColor = [UIColor blackColor];
 	self.view.alpha = 0.4;
 
+	self.scrollViewPages = [NSMutableArray array];
+
 	[self addActionSheet];
 	[self addMessageLabel];
 	[self addPagerControl];
@@ -39,13 +43,17 @@ static const CGFloat kBackgroundAlpha = 0.7;
 
 	// Vertical arrangement
 	NSString *constraintStr = [NSString stringWithFormat:@"V:|-(7)-[msg(22)]-(7)-[scroll][pager(22)]-7-[CancelBtn]-(7)-|"];
+	NSDictionary *views = @{@"msg":self.messageLabel,@"scroll":self.scrollView,@"pager":self.pagerCotrol,@"CancelBtn":self.cancelButton};
 	NSArray *constraints = [NSLayoutConstraint constraintsWithVisualFormat:constraintStr
 																   options:0
 																   metrics:nil
-																	 views:@{@"msg":self.messageLabel,@"scroll":self.scrollView,@"pager":self.pagerCotrol,@"CancelBtn":self.cancelButton}];
+																	 views:views];
 	[self.actionSheet addConstraints:constraints];
 
 	[self.actionSheet layoutIfNeeded];
+	[self AddButtonsToTheScrollView];
+	[self.actionSheet layoutIfNeeded];
+
 	// TODO: Shall this go in the viewDidAppear?.
 	[UIView animateWithDuration:kApearanceAnimationDuration animations:^{
 		[self.sheetVerticalConstraint setConstant:0];
@@ -112,6 +120,8 @@ static const CGFloat kJEACButtonHeightLandscape = 30.0;
 	[self adjustSheetConstraints];
 	[self adjustCancelButtonConstraints];
 	[self.actionSheet layoutIfNeeded];
+	[self AddButtonsToTheScrollView];
+	[self.scrollView layoutIfNeeded];
 }
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
@@ -290,7 +300,7 @@ static const CGFloat kJEACButtonHeightLandscape = 30.0;
 	newScrollView.showsVerticalScrollIndicator = NO;
 	newScrollView.scrollsToTop = NO;
 	newScrollView.bounces = NO;
-//	newScrollView.delegate = self;
+	newScrollView.delegate = self;
 
 	NSArray *constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"|[scrollV]|"
 																   options:0
@@ -304,6 +314,110 @@ static const CGFloat kJEACButtonHeightLandscape = 30.0;
 
 	return newScrollView;	
 }
+
+- (UIButton *)newRegularButtonWithTitle:(NSString *)title;
+{
+	UIButton *newRegularButton = [UIButton buttonWithType:UIButtonTypeCustom];
+	[newRegularButton setTranslatesAutoresizingMaskIntoConstraints:NO];
+	newRegularButton.layer.backgroundColor = [UIColor whiteColor].CGColor;
+	newRegularButton.layer.cornerRadius = 5.0;
+	[newRegularButton setTitle:title forState:UIControlStateNormal];
+
+	return newRegularButton;
+}
+
+#pragma mark - Content of the scroll view
+static const CGFloat kJEACInterButtonsSpace = 10.0;
+
+
+- (void)AddButtonsToTheScrollView
+{
+	for (UIView *sview in self.scrollView.subviews) {
+		[sview removeFromSuperview];
+	}
+	[self.scrollViewPages removeAllObjects];
+	[self.scrollView layoutIfNeeded];
+
+
+	NSInteger numberOfPages = ceil((([self buttonHeight] + kJEACInterButtonsSpace)*[self.actions count])/self.scrollView.bounds.size.height);
+	NSInteger buttonsPerPage = floor(self.scrollView.bounds.size.height/([self buttonHeight] + kJEACInterButtonsSpace));
+
+	self.pagerCotrol.numberOfPages = numberOfPages;
+	self.pagerCotrol.currentPage = 0;
+
+	self.scrollView.contentSize = CGSizeMake(self.scrollView.bounds.size.width * numberOfPages,
+											 self.scrollView.bounds.size.height);
+
+	UIView *currentSubView = nil;
+	UIButton *currentButton = nil;
+	NSInteger titleIDX = 0;
+	for (NSInteger idx=0; idx<numberOfPages; idx++) {
+
+		currentSubView = [[UIView alloc] init];
+		[currentSubView setTranslatesAutoresizingMaskIntoConstraints:NO];
+		[self.scrollViewPages addObject:currentSubView];
+		[self.scrollView addSubview:currentSubView];
+
+		NSDictionary *views = NSDictionaryOfVariableBindings(currentSubView);
+		NSArray *constraints;
+		constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[currentSubView]|"
+															  options:0
+															  metrics:nil
+																views:views];
+		[self.scrollView addConstraints:constraints];
+
+		NSMutableArray *buttonsInACurrentPage = [NSMutableArray array];
+		for (NSInteger jdx = 0; jdx<buttonsPerPage; jdx++) {
+			if (titleIDX>=[self.actions count])
+				break;
+			currentButton = [self newRegularButtonWithTitle:[self.actions objectAtIndex:titleIDX]];
+			titleIDX++;
+			[buttonsInACurrentPage addObject:currentButton];
+			[currentSubView addSubview:currentButton];
+
+			views = NSDictionaryOfVariableBindings(currentButton);
+			constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"H:|-20-[currentButton]-20-|"
+																  options:0
+																  metrics:nil
+																	views:views];
+			[currentSubView addConstraints:constraints];
+		}
+
+		NSMutableString *constraintVisualFormat = [NSMutableString stringWithFormat:@"V:|-(>=%f)-",kJEACInterButtonsSpace];
+		NSMutableDictionary *viewsDictionary = [NSMutableDictionary dictionary];
+		for (UIButton *button in buttonsInACurrentPage) {
+			NSString *buttonID = [NSString stringWithFormat:@"button%d",[buttonsInACurrentPage indexOfObject:button]];
+			[constraintVisualFormat appendFormat:@"[%@(%f)]-(>=%f)-",buttonID,[self buttonHeight],kJEACInterButtonsSpace];
+			[viewsDictionary setObject:button forKey:buttonID];
+		}
+		[constraintVisualFormat appendFormat:@"|"];
+		constraints = [NSLayoutConstraint constraintsWithVisualFormat:constraintVisualFormat
+															  options:0
+															  metrics:nil
+																views:viewsDictionary];
+		[currentSubView addConstraints:constraints];
+
+		[currentSubView layoutIfNeeded];
+	}
+
+	NSMutableString *constraintVisualFormat = [NSMutableString stringWithFormat:@"H:|"];
+	NSMutableDictionary *viewsDictionary = [NSMutableDictionary dictionary];
+	NSString *viewID;
+	for (UIView *subView in self.scrollViewPages) {
+		viewID = [NSString stringWithFormat:@"ScrollerPage%d",[self.scrollViewPages indexOfObject:subView]];
+		[constraintVisualFormat appendFormat:@"[%@(%f)]",viewID,self.scrollView.bounds.size.width];
+		[viewsDictionary setObject:subView forKey:viewID];
+	}
+	[constraintVisualFormat appendFormat:@"|"];
+	NSArray *constraints = [NSLayoutConstraint constraintsWithVisualFormat:constraintVisualFormat
+																   options:0
+																   metrics:nil
+																	 views:viewsDictionary];
+	[self.scrollView addConstraints:constraints];
+
+	[self.scrollView layoutIfNeeded];
+}
+
 
 #pragma mark - Buttons events
 
@@ -322,6 +436,25 @@ static const CGFloat kJEACButtonHeightLandscape = 30.0;
 			[self removeFromParentViewController];
 		}
 	}];
+}
+
+#pragma mark - ScrollViewDelegate
+
+- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView
+{
+	CGFloat scrollWidth = self.scrollView.bounds.size.width;
+    NSUInteger page = floor((self.scrollView.contentOffset.x - scrollWidth / 2) / scrollWidth) + 1;
+    self.pagerCotrol.currentPage = page;
+}
+
+#pragma mark - PageControl delegate
+
+-(void)pageControlDidChangeValue:(UIPageControl *)pageControl
+{
+	if([pageControl currentPage]>=[self.scrollViewPages count])
+		return;
+	UIView *viewToShow = [self.scrollViewPages objectAtIndex:[pageControl currentPage]];
+	[self.scrollView scrollRectToVisible:viewToShow.frame animated:YES];
 }
 
 @end
