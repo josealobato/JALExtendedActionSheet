@@ -13,6 +13,7 @@
 @property (nonatomic, strong) NSLayoutConstraint *sheetVerticalConstraint;
 @property (nonatomic, strong) UILabel *messageLabel;
 @property (nonatomic, strong) UIPageControl *pagerCotrol;
+@property (nonatomic, strong) UIScrollView *scrollView;
 @property (nonatomic, strong) UIButton *cancelButton;
 @property (nonatomic, strong) NSLayoutConstraint *cancleButtonHeightConstraint;
 @end
@@ -32,15 +33,16 @@ static const CGFloat kBackgroundAlpha = 0.7;
 	[self addActionSheet];
 	[self addMessageLabel];
 	[self addPagerControl];
+	[self addScrollView];
 	[self addCancelButton];
 
 
 	// Vertical arrangement
-	NSString *constraintStr = [NSString stringWithFormat:@"V:|-(7)-[msg(22)]-(>=22)-[pager(22)]-7-[CancelBtn]-(7)-|"];
+	NSString *constraintStr = [NSString stringWithFormat:@"V:|-(7)-[msg(22)]-(7)-[scroll][pager(22)]-7-[CancelBtn]-(7)-|"];
 	NSArray *constraints = [NSLayoutConstraint constraintsWithVisualFormat:constraintStr
 																   options:0
 																   metrics:nil
-																	 views:@{@"msg":self.messageLabel,@"pager":self.pagerCotrol,@"CancelBtn":self.cancelButton}];
+																	 views:@{@"msg":self.messageLabel,@"scroll":self.scrollView,@"pager":self.pagerCotrol,@"CancelBtn":self.cancelButton}];
 	[self.actionSheet addConstraints:constraints];
 
 	[self.actionSheet layoutIfNeeded];
@@ -275,6 +277,32 @@ static const CGFloat kJEACButtonHeightLandscape = 30.0;
 	newPageControl.layer.borderWidth = 1.0;
 
 	return newPageControl;
+}
+
+- (UIScrollView *)addScrollView
+{
+	UIScrollView *newScrollView = [[UIScrollView alloc] init];
+	[newScrollView setTranslatesAutoresizingMaskIntoConstraints:NO];
+	self.scrollView = newScrollView;
+	[self.actionSheet addSubview:newScrollView];
+	newScrollView.pagingEnabled = YES;
+	newScrollView.showsHorizontalScrollIndicator = NO;
+	newScrollView.showsVerticalScrollIndicator = NO;
+	newScrollView.scrollsToTop = NO;
+	newScrollView.bounces = NO;
+//	newScrollView.delegate = self;
+
+	NSArray *constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"|[scrollV]|"
+																   options:0
+																   metrics:nil
+																	 views:@{@"scrollV":newScrollView}];
+	[self.actionSheet addConstraints:constraints];
+
+	// TODO: Remove. Only Debug
+	newScrollView.layer.borderColor = [UIColor whiteColor].CGColor;
+	newScrollView.layer.borderWidth = 1.0;
+
+	return newScrollView;	
 }
 
 #pragma mark - Buttons events
