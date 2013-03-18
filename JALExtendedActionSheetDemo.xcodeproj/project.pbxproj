@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		253B487A16F71CDA00DB28F6 /* JALExtendedActionSheetVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 253B487916F71CDA00DB28F6 /* JALExtendedActionSheetVC.m */; };
 		2570D4FD16F3B58E00A76EA8 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2570D4FC16F3B58E00A76EA8 /* UIKit.framework */; };
 		2570D4FF16F3B58E00A76EA8 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2570D4FE16F3B58E00A76EA8 /* Foundation.framework */; };
 		2570D50116F3B58E00A76EA8 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2570D50016F3B58E00A76EA8 /* CoreGraphics.framework */; };
@@ -26,6 +27,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		253B487816F71CDA00DB28F6 /* JALExtendedActionSheetVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JALExtendedActionSheetVC.h; sourceTree = "<group>"; };
+		253B487916F71CDA00DB28F6 /* JALExtendedActionSheetVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JALExtendedActionSheetVC.m; sourceTree = "<group>"; };
 		2570D4F916F3B58E00A76EA8 /* JALExtendedActionSheetDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = JALExtendedActionSheetDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2570D4FC16F3B58E00A76EA8 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		2570D4FE16F3B58E00A76EA8 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -130,6 +133,8 @@
 			children = (
 				2570D52C16F3B66B00A76EA8 /* JALExtendedActionSheet.h */,
 				2570D52D16F3B66B00A76EA8 /* JALExtendedActionSheet.m */,
+				253B487816F71CDA00DB28F6 /* JALExtendedActionSheetVC.h */,
+				253B487916F71CDA00DB28F6 /* JALExtendedActionSheetVC.m */,
 			);
 			path = JALExtendedActionSheet;
 			sourceTree = "<group>";
@@ -208,6 +213,7 @@
 				2570D51616F3B58E00A76EA8 /* MasterViewController.m in Sources */,
 				2570D51916F3B58E00A76EA8 /* DetailViewController.m in Sources */,
 				2570D52E16F3B66B00A76EA8 /* JALExtendedActionSheet.m in Sources */,
+				253B487A16F71CDA00DB28F6 /* JALExtendedActionSheetVC.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -356,6 +362,7 @@
 				2570D52A16F3B58E00A76EA8 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
