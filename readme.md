@@ -43,6 +43,7 @@ The use is simple (see the example code included):
     [self.jeas setMainTitle:@"This is the title"];
     self.jeas.delegate = self;
 
+
 3. Implement the protocol to receive notification on the selected button.
 4. Use *setEventualMessage* to show a 2 seconds message in the location of the title.
 
