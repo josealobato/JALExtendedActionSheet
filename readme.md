@@ -25,23 +25,24 @@ The use is simple (see the example code included):
 1. include the JALExtendedActionSheetCV.m/.h in your project.
 2. Instantiate the view controller giving a list of actions (strings)
 
-    @interface MasterViewController () <JALExtendedActionSheetVCDelegate>
-       @property (nonatomic,strong) JALExtendedActionSheetVC  *jeas;
-        @property (nonatomic,strong) NSArray *actions;
-    ...
-    ...
-    - (void)viewDidLoad
-    {
-        [super viewDidLoad];
-        self.actions = @[@"Actions1",@"Actions2",@"Actions3",@"Actions4",@"Actions5",@"Actions6",@"Actions7"];
+Here an example of code:
+	@interface MasterViewController () <JALExtendedActionSheetVCDelegate>
+		@property (nonatomic,strong) JALExtendedActionSheetVC  *jeas;
+		@property (nonatomic,strong) NSArray *actions;
+	...
+	...
+	- (void)viewDidLoad
+	{
+		[super viewDidLoad];
+		self.actions = @[@"Actions1",@"Actions2",@"Actions3",@"Actions4",@"Actions5",@"Actions6",@"Actions7"];
 
 
-    ... (wherever you want)...
-    self.jeas = [[JALExtendedActionSheetVC alloc] init];
-    self.jeas.actions = self.actions;
-    [self.jeas showInView:self.view];
-    [self.jeas setMainTitle:@"This is the title"];
-    self.jeas.delegate = self;
+	... (wherever you want)...
+	self.jeas = [[JALExtendedActionSheetVC alloc] init];
+	self.jeas.actions = self.actions;
+	[self.jeas showInView:self.view];
+	[self.jeas setMainTitle:@"This is the title"];
+	self.jeas.delegate = self;
 
 
 3. Implement the protocol to receive notification on the selected button.
