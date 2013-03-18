@@ -23,7 +23,6 @@
 		2570D51F16F3B58E00A76EA8 /* MasterViewController_iPad.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2570D51D16F3B58E00A76EA8 /* MasterViewController_iPad.xib */; };
 		2570D52216F3B58E00A76EA8 /* DetailViewController_iPhone.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2570D52016F3B58E00A76EA8 /* DetailViewController_iPhone.xib */; };
 		2570D52516F3B58E00A76EA8 /* DetailViewController_iPad.xib in Resources */ = {isa = PBXBuildFile; fileRef = 2570D52316F3B58E00A76EA8 /* DetailViewController_iPad.xib */; };
-		2570D52E16F3B66B00A76EA8 /* JALExtendedActionSheet.m in Sources */ = {isa = PBXBuildFile; fileRef = 2570D52D16F3B66B00A76EA8 /* JALExtendedActionSheet.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -50,8 +49,6 @@
 		2570D51E16F3B58E00A76EA8 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/MasterViewController_iPad.xib; sourceTree = "<group>"; };
 		2570D52116F3B58E00A76EA8 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/DetailViewController_iPhone.xib; sourceTree = "<group>"; };
 		2570D52416F3B58E00A76EA8 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/DetailViewController_iPad.xib; sourceTree = "<group>"; };
-		2570D52C16F3B66B00A76EA8 /* JALExtendedActionSheet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JALExtendedActionSheet.h; sourceTree = "<group>"; };
-		2570D52D16F3B66B00A76EA8 /* JALExtendedActionSheet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JALExtendedActionSheet.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -131,8 +128,6 @@
 		2570D52B16F3B5D900A76EA8 /* JALExtendedActionSheet */ = {
 			isa = PBXGroup;
 			children = (
-				2570D52C16F3B66B00A76EA8 /* JALExtendedActionSheet.h */,
-				2570D52D16F3B66B00A76EA8 /* JALExtendedActionSheet.m */,
 				253B487816F71CDA00DB28F6 /* JALExtendedActionSheetVC.h */,
 				253B487916F71CDA00DB28F6 /* JALExtendedActionSheetVC.m */,
 			);
@@ -212,7 +207,6 @@
 				2570D50D16F3B58E00A76EA8 /* AppDelegate.m in Sources */,
 				2570D51616F3B58E00A76EA8 /* MasterViewController.m in Sources */,
 				2570D51916F3B58E00A76EA8 /* DetailViewController.m in Sources */,
-				2570D52E16F3B66B00A76EA8 /* JALExtendedActionSheet.m in Sources */,
 				253B487A16F71CDA00DB28F6 /* JALExtendedActionSheetVC.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

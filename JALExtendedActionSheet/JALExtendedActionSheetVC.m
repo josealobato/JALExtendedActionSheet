@@ -18,6 +18,7 @@
 @property (nonatomic, strong) NSLayoutConstraint *cancleButtonHeightConstraint;
 
 @property (nonatomic, strong) NSMutableArray *scrollViewPages;
+@property (nonatomic, strong) NSString *sheetTitle;
 @end
 
 
@@ -39,7 +40,6 @@ static const CGFloat kBackgroundAlpha = 0.7;
 	[self addPagerControl];
 	[self addScrollView];
 	[self addCancelButton];
-
 
 	// Vertical arrangement
 	NSString *constraintStr = [NSString stringWithFormat:@"V:|-(7)-[msg(22)]-(7)-[scroll][pager(22)]-7-[CancelBtn]-(7)-|"];
@@ -76,9 +76,45 @@ static const CGFloat kBackgroundAlpha = 0.7;
 
 - (void)setMessage:(NSString *)message
 {
+
+}
+
+- (void)setMainTitle:(NSString*)title
+{
 	if (self.messageLabel) {
-		self.messageLabel.text = message;
+		self.messageLabel.text = title;
+		self.sheetTitle = title;
 	}
+}
+
+- (void)setEventualMessage:(NSString *)message
+{
+	[UIView animateWithDuration:0.2
+					 animations:^{self.messageLabel.alpha = 0.0;}
+					 completion:^(BOOL finished){
+						 if(finished){
+							 [UIView animateWithDuration:0.4 animations:^{
+								 self.messageLabel.text = message;
+								 self.messageLabel.alpha = 1.0;
+							 } completion:^(BOOL finished){
+								 [NSTimer scheduledTimerWithTimeInterval:2.0 target:self selector:@selector(onTimer:) userInfo:nil repeats:NO];
+							 }];
+						 }
+					 }];
+}
+
+- (void)onTimer:(id)sender
+{
+	[UIView animateWithDuration:0.2
+					 animations:^{self.messageLabel.alpha = 0.0;}
+					 completion:^(BOOL finished){
+						 if(finished){
+							 [UIView animateWithDuration:0.4 animations:^{
+								 self.messageLabel.text = self.sheetTitle;
+								 self.messageLabel.alpha = 1.0;
+							 } completion:NULL];
+						 }
+					 }];
 }
 
 #pragma mark - Dimensions
@@ -118,12 +154,11 @@ static const CGFloat kJEACButtonHeightLandscape = 30.0;
 
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
-	NSLog(@"RotationEvenv1");	
+
 }
 
 - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation duration:(NSTimeInterval)duration
 {
-	NSLog(@"RotationEvenv2");
 	[self adjustSheetConstraints];
 	[self adjustCancelButtonConstraints];
 	[self.actionSheet layoutIfNeeded];
@@ -133,7 +168,7 @@ static const CGFloat kJEACButtonHeightLandscape = 30.0;
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
 {
-	NSLog(@"RotationEvenv3");
+
 }
 
 
@@ -161,10 +196,6 @@ static const CGFloat kJEACButtonHeightLandscape = 30.0;
 														  metrics:nil
 															views:views];
 	[self.rootController.view addConstraints:constraints];
-
-	// TODO: Remove only debug.
-//	self.view.layer.borderWidth = 1.0;
-//	self.view.layer.borderColor = [UIColor greenColor].CGColor;
 }
 
 
@@ -179,10 +210,6 @@ static const CGFloat kJEACButtonHeightLandscape = 30.0;
 	self.actionSheet = sheet;
 	[self adjustSheetConstraints];
 	[self.sheetVerticalConstraint setConstant:[self sheetHeight]-10];
-
-	// TODO: Remove only debug.
-//	self.actionSheet.layer.borderWidth = 1.0;
-//	self.actionSheet.layer.borderColor = [UIColor redColor].CGColor;
 	return sheet;
 }
 
@@ -232,9 +259,7 @@ static const CGFloat kJEACButtonHeightLandscape = 30.0;
 														  metrics:nil
 															views:@{@"cancelButton":newCancelButton}];
 	[self.actionSheet addConstraints:constraints];
-
 	[self adjustCancelButtonConstraints];
-	
 	return newCancelButton;
 }
 
@@ -270,9 +295,6 @@ static const CGFloat kJEACButtonHeightLandscape = 30.0;
 															views:@{@"msg":newLabel}];
 	[self.actionSheet addConstraints:constraints];
 
-	// TODO: Remove only debug.
-//	newLabel.textColor = [UIColor whiteColor];
-
 	return newLabel;
 }
 
@@ -291,10 +313,6 @@ static const CGFloat kJEACButtonHeightLandscape = 30.0;
 	[newPageControl addTarget:self
 					   action:@selector(pageControlDidChangeValue:)
 			 forControlEvents:UIControlEventValueChanged];
-
-	// TODO: Remove. Only Debug
-//	newPageControl.layer.borderColor = [UIColor whiteColor].CGColor;
-//	newPageControl.layer.borderWidth = 1.0;
 
 	return newPageControl;
 }
@@ -317,11 +335,6 @@ static const CGFloat kJEACButtonHeightLandscape = 30.0;
 																   metrics:nil
 																	 views:@{@"scrollV":newScrollView}];
 	[self.actionSheet addConstraints:constraints];
-
-	// TODO: Remove. Only Debug
-//	newScrollView.layer.borderColor = [UIColor whiteColor].CGColor;
-//	newScrollView.layer.borderWidth = 1.0;
-
 	return newScrollView;	
 }
 

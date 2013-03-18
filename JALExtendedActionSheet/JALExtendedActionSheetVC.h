@@ -14,7 +14,8 @@
 @property (nonatomic, strong) NSArray *actions;
 @property (nonatomic, assign) id<JALExtendedActionSheetVCDelegate> delegate;
 - (void)showInView:(UIView*)hostview;
-- (void)setMessage:(NSString *)message;
+- (void)setMainTitle:(NSString*)title;
+- (void)setEventualMessage:(NSString *)message;
 @end
 
 @protocol JALExtendedActionSheetVCDelegate <NSObject>

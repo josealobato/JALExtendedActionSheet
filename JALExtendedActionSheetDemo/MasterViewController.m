@@ -137,6 +137,7 @@
 		self.jeas = [[JALExtendedActionSheetVC alloc] init];
 		self.jeas.actions = self.actions;
 		[self.jeas showInView:self.view];
+		[self.jeas setMainTitle:@"This is the title"];
 		self.jeas.delegate = self;
     } else {
         self.detailViewController.detailItem = object;
@@ -145,7 +146,7 @@
 
 - (void)actionSheet:(JALExtendedActionSheetVC*)actionSheet didSelectAction:(NSInteger)index
 {
-	[self.jeas setMessage:[self.actions objectAtIndex:index]];
+	[self.jeas setEventualMessage:[self.actions objectAtIndex:index]];
 }
 
 - (void)actionSheetDidCancel:(JALExtendedActionSheetVC*)actionSheet
