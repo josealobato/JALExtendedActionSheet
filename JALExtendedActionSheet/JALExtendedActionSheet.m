@@ -11,6 +11,7 @@
 
 
 @interface JALExtendedActionSheet ()
+@property (nonatomic, strong) UIViewController *rootController;
 @property (nonatomic, strong) UIView *hostV;
 @property (nonatomic, weak) UIView* sheetV;
 @property (nonatomic, strong) NSLayoutConstraint *sheetVerticalConstraint;
@@ -63,7 +64,13 @@ static const CGFloat kJEACHeight = 320.0;
 															views:views];
 	[self.view addConstraints:constraints];
 
-	self.sheetVerticalConstraint = [NSLayoutConstraint constraintWithItem:sheet attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual toItem:self.view attribute:NSLayoutAttributeBottom multiplier:1.0 constant:0];
+	self.sheetVerticalConstraint = [NSLayoutConstraint constraintWithItem:sheet
+																attribute:NSLayoutAttributeTop
+																relatedBy:NSLayoutRelationEqual
+																   toItem:self.view
+																attribute:NSLayoutAttributeBottom
+															   multiplier:1.0
+																 constant:0];
 
 	[self.view addConstraint:self.sheetVerticalConstraint];
 
@@ -160,11 +167,11 @@ static const CGFloat kJEACHeight = 320.0;
 - (void)showInView:(UIView*)hostview
 {
 
-	UIViewController *rootController = hostview.window.rootViewController;
+	self.rootController = hostview.window.rootViewController;
 
-	[rootController addChildViewController:self];
-	[rootController.view addSubview:self.view];
-	[self didMoveToParentViewController:rootController];
+	[self.rootController addChildViewController:self];
+	[self.rootController.view addSubview:self.view];
+	[self didMoveToParentViewController:self.rootController];
 
 	UIView *selfview = self.view;
 	NSDictionary *views = NSDictionaryOfVariableBindings(selfview);
@@ -173,13 +180,13 @@ static const CGFloat kJEACHeight = 320.0;
 														  options:0
 														  metrics:nil
 															views:views];
-	[rootController.view addConstraints:constraints];
+	[self.rootController.view addConstraints:constraints];
 
 	constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|[selfview]|"
 														  options:0
 														  metrics:nil
 															views:views];
-	[rootController.view addConstraints:constraints];
+	[self.rootController.view addConstraints:constraints];
 }
 
 #pragma mark - Button Views
@@ -275,6 +282,10 @@ static const CGFloat kJEACHeight = 320.0;
 	newCancelButton.layer.backgroundColor = [UIColor redColor].CGColor;
 	newCancelButton.layer.cornerRadius = 5.0;
 	[newCancelButton setTitle:NSLocalizedString(@"Cancel",@"CancelButton on action sheet") forState:UIControlStateNormal];
+
+	[newCancelButton addTarget:self
+						action:@selector(onCancelButton:)
+			  forControlEvents:UIControlEventTouchUpInside];
 
 	return newCancelButton;
 }
@@ -397,5 +408,25 @@ static const CGFloat kJEACHeight = 320.0;
 //{
 //
 //}
+
+#pragma mark - Buttons events
+
+- (void)onCancelButton:(UIButton*)button
+{
+	// TODO: Investigate why this animation does not work.
+	[[self.view.subviews lastObject] layoutIfNeeded];
+	[UIView animateWithDuration:kApearanceAnimationDuration animations:^{
+		[self.sheetVerticalConstraint setConstant:0.0];
+		[self.view layoutIfNeeded];
+		self.view.alpha = 0.0;
+	} completion:^(BOOL finished){
+		if (finished) {
+			[self willMoveToParentViewController:nil];
+			[self.view removeFromSuperview];
+			[self removeFromParentViewController];
+		}
+	}];
+	[self.view layoutIfNeeded];
+}
 
 @end
