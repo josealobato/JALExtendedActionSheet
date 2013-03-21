@@ -43,6 +43,40 @@
 	self.navigationItem.rightBarButtonItem = addButton;
 
 	self.actions = @[@"Actions1",@"Actions2",@"Actions3",@"Actions4",@"Actions5",@"Actions6",@"Actions7"];
+
+	UISegmentedControl *segControl = [[UISegmentedControl alloc] initWithItems:@[@"nil",@"0act", @"1act", @"3act", @"7act",]];
+	segControl.segmentedControlStyle = UISegmentedControlStyleBar;
+	segControl.selectedSegmentIndex = 4;
+	self.navigationItem.titleView = segControl;
+
+	[segControl addTarget:self
+				   action:@selector(segmentedControlEvent:)
+		 forControlEvents:UIControlEventValueChanged];
+
+}
+
+- (void)segmentedControlEvent:(id)sender
+{
+	switch ([(UISegmentedControl*)sender selectedSegmentIndex]) {
+		case 0:
+			self.actions = nil;
+			break;
+		case 1:
+			self.actions = @[];
+			break;
+		case 2:
+			self.actions = @[@"Actions1"];
+			break;
+		case 3:
+			self.actions = @[@"Actions1",@"Actions2",@"Actions3"];
+			break;
+		case 4:
+			self.actions = @[@"Actions1",@"Actions2",@"Actions3",@"Actions4",@"Actions5",@"Actions6",@"Actions7"];
+			break;
+
+		default:
+			break;
+	}
 }
 
 - (void)didReceiveMemoryWarning
@@ -150,7 +184,7 @@
 	UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
 	
 	self.jeas = [[JALExtendedActionSheetVC alloc] init];
-	self.jeas.actions = /*[NSArray arrayWithObject:@"OnlyOne"]*/[NSArray array]/* self.actions*/;
+	self.jeas.actions = self.actions;
 	[self.jeas showInView:[cell.subviews objectAtIndex:1]];
 	[self.jeas setMainTitle:@"This is the title"];
 	self.jeas.delegate = self;
