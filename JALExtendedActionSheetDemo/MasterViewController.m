@@ -61,6 +61,11 @@
     [self.tableView insertRowsAtIndexPaths:@[indexPath] withRowAnimation:UITableViewRowAnimationAutomatic];
 }
 
+- (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
+{
+	[self.jeas dismissExtendedActionSheet];
+}
+
 #pragma mark - Table View
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
@@ -81,9 +86,9 @@
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
     if (cell == nil) {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
-        if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
-            cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-        }
+//        if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
+            cell.accessoryType = UITableViewCellAccessoryDetailDisclosureButton;
+//        }
     }
 
 
@@ -128,20 +133,27 @@
 {
     NSDate *object = _objects[indexPath.row];
     if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
-/*	    if (!self.detailViewController) {
+	    if (!self.detailViewController) {
 	        self.detailViewController = [[DetailViewController alloc] initWithNibName:@"DetailViewController_iPhone" bundle:nil];
 	    }
 	    self.detailViewController.detailItem = object;
         [self.navigationController pushViewController:self.detailViewController animated:YES];
- */
-		self.jeas = [[JALExtendedActionSheetVC alloc] init];
-		self.jeas.actions = self.actions;
-		[self.jeas showInView:self.view];
-		[self.jeas setMainTitle:@"This is the title"];
-		self.jeas.delegate = self;
-    } else {
+
+	} else {
         self.detailViewController.detailItem = object;
     }
+}
+
+- (void)tableView:(UITableView *)tableView accessoryButtonTappedForRowWithIndexPath:(NSIndexPath *)indexPath
+{
+
+	UITableViewCell *cell = [tableView cellForRowAtIndexPath:indexPath];
+	
+	self.jeas = [[JALExtendedActionSheetVC alloc] init];
+	self.jeas.actions = /*[NSArray arrayWithObject:@"OnlyOne"]*/[NSArray array]/* self.actions*/;
+	[self.jeas showInView:[cell.subviews objectAtIndex:1]];
+	[self.jeas setMainTitle:@"This is the title"];
+	self.jeas.delegate = self;
 }
 
 - (void)actionSheet:(JALExtendedActionSheetVC*)actionSheet didSelectAction:(NSInteger)index

@@ -10,12 +10,13 @@
 
 @protocol JALExtendedActionSheetVCDelegate;
 
-@interface JALExtendedActionSheetVC : UIViewController <UIScrollViewDelegate>
+@interface JALExtendedActionSheetVC : UIViewController <UIScrollViewDelegate, UIPopoverControllerDelegate>
 @property (nonatomic, strong) NSArray *actions;
 @property (nonatomic, assign) id<JALExtendedActionSheetVCDelegate> delegate;
 - (void)showInView:(UIView*)hostview;
 - (void)setMainTitle:(NSString*)title;
 - (void)setEventualMessage:(NSString *)message;
+- (void)dismissExtendedActionSheet;
 @end
 
 @protocol JALExtendedActionSheetVCDelegate <NSObject>

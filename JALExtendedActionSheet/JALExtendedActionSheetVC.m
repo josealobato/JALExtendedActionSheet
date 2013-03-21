@@ -8,7 +8,7 @@
 
 @interface JALExtendedActionSheetVC ()
 @property (nonatomic, strong) UIViewController *rootController;
-
+@property (nonatomic, strong) UIPopoverController *popOverController;
 @property (nonatomic, strong) UIView *actionSheet;
 @property (nonatomic, strong) NSLayoutConstraint *sheetVerticalConstraint;
 @property (nonatomic, strong) UILabel *messageLabel;
@@ -36,6 +36,13 @@ static const CGFloat kBackgroundAlpha = 0.7;
 	self.scrollViewPages = [NSMutableArray array];
 
 	[self addActionSheet];
+
+
+	// if the device is an iPad we do not use the backgground view but the sheet itself as view.
+	if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
+		self.view = self.actionSheet;
+	}
+
 	[self addMessageLabel];
 	[self addPagerControl];
 	[self addScrollView];
@@ -54,13 +61,15 @@ static const CGFloat kBackgroundAlpha = 0.7;
 	[self AddButtonsToTheScrollView];
 	[self.actionSheet layoutIfNeeded];
 
-	// TODO: Shall this go in the viewDidAppear?.
-	[UIView animateWithDuration:kApearanceAnimationDuration animations:^{
-		[self.sheetVerticalConstraint setConstant:0];
-		[self.actionSheet layoutIfNeeded];
-		self.view.alpha = kBackgroundAlpha;
+	if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
+		// TODO: Shall this go in the viewDidAppear?.
+		[UIView animateWithDuration:kApearanceAnimationDuration animations:^{
+			[self.sheetVerticalConstraint setConstant:0];
+			[self.actionSheet layoutIfNeeded];
+			self.view.alpha = kBackgroundAlpha;
 
-	} completion:NULL];
+		} completion:NULL];
+	}
 }
 
 - (void)viewDidAppear:(BOOL)animated
@@ -123,12 +132,18 @@ static const CGFloat kJEACSheetHeightPortrait = 320.0;
 static const CGFloat kJEACSheetHeightLandscape = 200.0;
 - (CGFloat)sheetHeight
 {
-	UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
-    if (UIDeviceOrientationIsLandscape(deviceOrientation))
-    {
-		return kJEACSheetHeightLandscape;
-    }
-    else //(UIDeviceOrientationIsPortrait(deviceOrientation))
+	if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
+		UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
+		if (UIDeviceOrientationIsLandscape(deviceOrientation))
+		{
+			return kJEACSheetHeightLandscape;
+		}
+		else //(UIDeviceOrientationIsPortrait(deviceOrientation))
+		{
+			return kJEACSheetHeightPortrait;
+		}
+	}
+	else 
     {
 		return kJEACSheetHeightPortrait;
     }
@@ -138,12 +153,18 @@ static const CGFloat kJEACButtonHeightPortrait = 40.0;
 static const CGFloat kJEACButtonHeightLandscape = 30.0;
 - (CGFloat)buttonHeight
 {
-	UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
-    if (UIDeviceOrientationIsLandscape(deviceOrientation))
-    {
-		return kJEACButtonHeightLandscape;
-    }
-    else //(UIDeviceOrientationIsPortrait(deviceOrientation))
+	if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
+		UIDeviceOrientation deviceOrientation = [UIDevice currentDevice].orientation;
+		if (UIDeviceOrientationIsLandscape(deviceOrientation))
+		{
+			return kJEACButtonHeightLandscape;
+		}
+		else //(UIDeviceOrientationIsPortrait(deviceOrientation))
+		{
+			return kJEACButtonHeightPortrait;
+		}
+	}
+	else
     {
 		return kJEACButtonHeightPortrait;
     }
@@ -159,11 +180,16 @@ static const CGFloat kJEACButtonHeightLandscape = 30.0;
 
 - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation duration:(NSTimeInterval)duration
 {
-	[self adjustSheetConstraints];
-	[self adjustCancelButtonConstraints];
-	[self.actionSheet layoutIfNeeded];
-	[self AddButtonsToTheScrollView];
-	[self.scrollView layoutIfNeeded];
+ 	if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPad) {
+		[self dismissExtendedActionSheet];
+	}
+	else {
+		[self adjustSheetConstraints];
+		[self adjustCancelButtonConstraints];
+		[self.actionSheet layoutIfNeeded];
+		[self AddButtonsToTheScrollView];
+		[self.scrollView layoutIfNeeded];
+	}
 }
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
@@ -176,26 +202,37 @@ static const CGFloat kJEACButtonHeightLandscape = 30.0;
 
 - (void)showInView:(UIView*)hostview
 {
-	self.rootController = hostview.window.rootViewController;
+	if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
+		self.rootController = hostview.window.rootViewController;
 
-	[self.rootController addChildViewController:self];
-	[self.rootController.view addSubview:self.view];
-	[self didMoveToParentViewController:self.rootController];
+		[self.rootController addChildViewController:self];
+		[self.rootController.view addSubview:self.view];
+		[self didMoveToParentViewController:self.rootController];
 
-	UIView *selfview = self.view;
-	NSDictionary *views = NSDictionaryOfVariableBindings(selfview);
-	NSArray *constraints;
-	constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"|[selfview]|"
-														  options:0
-														  metrics:nil
-															views:views];
-	[self.rootController.view addConstraints:constraints];
+		UIView *selfview = self.view;
+		NSDictionary *views = NSDictionaryOfVariableBindings(selfview);
+		NSArray *constraints;
+		constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"|[selfview]|"
+															  options:0
+															  metrics:nil
+																views:views];
+		[self.rootController.view addConstraints:constraints];
 
-	constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|-20-[selfview]|"
-														  options:0
-														  metrics:nil
-															views:views];
-	[self.rootController.view addConstraints:constraints];
+		constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|-20-[selfview]|"
+															  options:0
+															  metrics:nil
+																views:views];
+		[self.rootController.view addConstraints:constraints];
+	}
+	else {
+		self.popOverController =  [[UIPopoverController alloc] initWithContentViewController:self];
+		self.rootController = hostview.window.rootViewController;
+		[self.popOverController presentPopoverFromRect:hostview.frame
+												inView:[hostview superview]
+							  permittedArrowDirections:UIPopoverArrowDirectionAny
+											  animated:YES];
+		self.popOverController.delegate = self;
+	}
 }
 
 
@@ -206,7 +243,10 @@ static const CGFloat kJEACButtonHeightLandscape = 30.0;
 	UIView *sheet = [[UIView alloc] init];
 	[sheet setTranslatesAutoresizingMaskIntoConstraints:NO];
 	sheet.backgroundColor = [UIColor blackColor];
-	[self.view addSubview:sheet];
+	// If ipad the acctionsheet it the view.
+	if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
+		[self.view addSubview:sheet];
+	}
 	self.actionSheet = sheet;
 	[self adjustSheetConstraints];
 	[self.sheetVerticalConstraint setConstant:[self sheetHeight]-10];
@@ -215,28 +255,49 @@ static const CGFloat kJEACButtonHeightLandscape = 30.0;
 
 - (void)adjustSheetConstraints
 {
-	[self.view removeConstraints:[self.view constraints]];	
+	[self.view removeConstraints:[self.view constraints]];
+
 	NSArray *constraints;
-	constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"|[sheet]|"
-														  options:0
-														  metrics:nil
-															views:@{@"sheet":self.actionSheet}];
-	[self.view addConstraints:constraints];
+	if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
 
-	constraints = [NSLayoutConstraint constraintsWithVisualFormat:[NSString stringWithFormat:@"V:[sheet(%f)]", [self sheetHeight]]
-														  options:0
-														  metrics:nil
-															views:@{@"sheet":self.actionSheet}];
-	[self.view addConstraints:constraints];
+		constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"|[sheet]|"
+															  options:0
+															  metrics:nil
+																views:@{@"sheet":self.actionSheet}];
+		[self.view addConstraints:constraints];
 
-	self.sheetVerticalConstraint = [NSLayoutConstraint constraintWithItem:self.actionSheet
-																attribute:NSLayoutAttributeBottom
-																relatedBy:NSLayoutRelationEqual
-																   toItem:self.view
-																attribute:NSLayoutAttributeBottom
-															   multiplier:1.0
-																 constant:0];
-	[self.view addConstraint:self.sheetVerticalConstraint];
+
+		constraints = [NSLayoutConstraint constraintsWithVisualFormat:[NSString stringWithFormat:@"V:[sheet(%f)]", [self sheetHeight]]
+															  options:0
+															  metrics:nil
+																views:@{@"sheet":self.actionSheet}];
+		[self.view addConstraints:constraints];
+
+		self.sheetVerticalConstraint = [NSLayoutConstraint constraintWithItem:self.actionSheet
+																	attribute:NSLayoutAttributeBottom
+																	relatedBy:NSLayoutRelationEqual
+																	   toItem:self.view
+																	attribute:NSLayoutAttributeBottom
+																   multiplier:1.0
+																	 constant:0];
+		[self.view addConstraint:self.sheetVerticalConstraint];
+	}
+	else{
+
+		constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"[sheet(320)]"
+															  options:0
+															  metrics:nil
+																views:@{@"sheet":self.actionSheet}];
+		[self.actionSheet addConstraints:constraints];
+		
+		constraints = [NSLayoutConstraint constraintsWithVisualFormat:[NSString stringWithFormat:@"V:[sheet(320)]"]
+															  options:0
+															  metrics:nil
+																views:@{@"sheet":self.actionSheet}];
+		[self.actionSheet addConstraints:constraints];
+		self.contentSizeForViewInPopover = CGSizeMake(320, 340);
+
+	}
 }
 
 - (UIButton *)addCancelButton
@@ -345,6 +406,7 @@ static const CGFloat kJEACButtonHeightLandscape = 30.0;
 	newRegularButton.layer.backgroundColor = [UIColor whiteColor].CGColor;
 	newRegularButton.layer.cornerRadius = 5.0;
 	[newRegularButton setTitle:title forState:UIControlStateNormal];
+	[newRegularButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
 
 	[newRegularButton addTarget:self
 						 action:@selector(onRegularButton:)
@@ -368,6 +430,35 @@ static const CGFloat kJEACInterButtonsSpace = 10.0;
 
 	NSInteger numberOfPages = ceil((([self buttonHeight] + kJEACInterButtonsSpace)*[self.actions count])/self.scrollView.bounds.size.height);
 	NSInteger buttonsPerPage = floor(self.scrollView.bounds.size.height/([self buttonHeight] + kJEACInterButtonsSpace));
+
+	if(numberOfPages == 0 || buttonsPerPage == 0) {
+
+		self.scrollView.contentSize = CGSizeMake(self.scrollView.bounds.size.width,
+												 self.scrollView.bounds.size.height);
+
+		UILabel *label = [[UILabel alloc] init];
+		label.backgroundColor = [UIColor clearColor];
+		label.textColor = [UIColor whiteColor];
+		label.textAlignment = NSTextAlignmentCenter;
+		[label setTranslatesAutoresizingMaskIntoConstraints:NO];
+		label.text = NSLocalizedString(@"No Actions available.", @"No actions available on display message");
+		[self.scrollView addSubview:label];
+
+		NSArray *constraints;
+		constraints = [NSLayoutConstraint constraintsWithVisualFormat:[NSString stringWithFormat:@"H:|[label(%f)]|",self.scrollView.bounds.size.width]
+																	   options:0
+																	   metrics:nil
+																		 views:@{@"label":label}];
+		[self.scrollView addConstraints:constraints];
+		constraints = [NSLayoutConstraint constraintsWithVisualFormat:@"V:|-20-[label]"
+																	   options:0
+																	   metrics:nil
+																		 views:@{@"label":label}];
+		[self.scrollView addConstraints:constraints];
+		[self.scrollView layoutIfNeeded];
+		return;
+	}
+
 
 	self.pagerCotrol.numberOfPages = numberOfPages;
 	self.pagerCotrol.currentPage = 0;
@@ -451,23 +542,34 @@ static const CGFloat kJEACInterButtonsSpace = 10.0;
 
 - (void)onCancelButton:(UIButton*)button
 {
+	[self dismissExtendedActionSheet];
+}
+
+- (void)dismissExtendedActionSheet
+{
 	if (self.delegate && [self.delegate respondsToSelector:@selector(actionSheetDidCancel:)]) {
 		[self.delegate actionSheetDidCancel:self];
 	}
-	
-	// TODO: Investigate why this animation does not work.
-	[self.view layoutIfNeeded];
-	[UIView animateWithDuration:kApearanceAnimationDuration animations:^{
-		[self.sheetVerticalConstraint setConstant:[self sheetHeight]-10];
-		[self.actionSheet layoutIfNeeded];
-		self.view.alpha = 0.0;
-	} completion:^(BOOL finished){
-		if (finished) {
-			[self willMoveToParentViewController:nil];
-			[self.view removeFromSuperview];
-			[self removeFromParentViewController];
-		}
-	}];
+
+	if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
+		// TODO: Investigate why this animation does not work.
+		[self.view layoutIfNeeded];
+		[UIView animateWithDuration:kApearanceAnimationDuration animations:^{
+			[self.sheetVerticalConstraint setConstant:[self sheetHeight]-10];
+			[self.actionSheet layoutIfNeeded];
+			self.view.alpha = 0.0;
+		} completion:^(BOOL finished){
+			if (finished) {
+				[self willMoveToParentViewController:nil];
+				[self.view removeFromSuperview];
+				[self removeFromParentViewController];
+			}
+		}];
+	}
+	else {
+		[self.popOverController dismissPopoverAnimated:YES];
+	}
+
 }
 
 - (void)onRegularButton:(UIButton*)button
@@ -494,6 +596,13 @@ static const CGFloat kJEACInterButtonsSpace = 10.0;
 		return;
 	UIView *viewToShow = [self.scrollViewPages objectAtIndex:[pageControl currentPage]];
 	[self.scrollView scrollRectToVisible:viewToShow.frame animated:YES];
+}
+
+#pragma mark - UIPopoverController delegate
+
+- (void)popoverControllerDidDismissPopover:(UIPopoverController *)popoverController
+{
+	[self dismissExtendedActionSheet];
 }
 
 @end
